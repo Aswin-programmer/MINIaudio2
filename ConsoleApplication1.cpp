@@ -1,17 +1,16 @@
 #include <iostream>
+#include <memory>
 
 #include "AudioEngine.h"
 #include "SoundComponent.h"
+#include "SoundSystem.h"
 
 int main()
 {
     // -----------------------
 // 1) At startup (once):
 // -----------------------
-    if (!AudioEngine::Instance().Initialize()) {
-        std::cerr << "Failed to initialize audio!\n";
-        // handle error...
-    }
+    auto soundSystem = std::make_shared<SoundSystem>();
 
     // Set up listener (usually follows player/camera)
     AudioEngine::Instance().SetListenerPosition(0.0f, 0.0f, 0.0f);  // X, Y, Z
@@ -31,12 +30,12 @@ int main()
     SoundComponent worldAudio;
 
     // Configure 3D properties
-    worldAudio.SetPosition(1, 1, 0.0f);  // 25 units to the right
+    worldAudio.SetPosition(0, 0, 0.0f);  // 25 units to the right
     worldAudio.SetAttenuationRange(1.0f, 20.0f); // Min 1m, Max 20m
     worldAudio.SetVelocity(0.0f, 0.0f, 0.0f);   // Stationary sound
 
     // a) load a sound effect
-    worldAudio.AddSound("footstep", "ASSETS/SOUND/magic-spell.wav", AudioCategory::SFX);
+    SoundComponent::AddMusic("footstep", "ASSETS/SOUND/magic-spell.wav", AudioCategory::SFX);
 
     //// b) load background music
     //SoundComponent::AddMusic("bgm", "ASSETS/SOUND/magic-spell.wav", AudioCategory::MUSIC);
@@ -46,7 +45,7 @@ int main()
     // -----------------------
 
     // play a one-shot effect
-    worldAudio.PlaySound("footstep");
+    worldAudio.PlayMusic("footstep");
 
     //// start looping background music
     //if (!worldAudio.PlayMusic("bgm", true)) {
@@ -68,7 +67,7 @@ int main()
     while (true) {
 
         // Update the audio engine (cleans up finished sounds)
-        AudioEngine::Instance().Update(0.016);
+        soundSystem->Update();
 
         // Update per-entity component (fade processing, triggers, sequences...)
         // If you have just one global component, pass distanceToListener = 0
@@ -76,8 +75,5 @@ int main()
 
         // … rest of your game update & render …
     }
-
-
-    AudioEngine::Instance().Shutdown();
 }
 
